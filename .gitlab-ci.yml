@@ -9,10 +9,12 @@
 #   - release: tags v<X.Y.Z> only; creates the GitLab release
 #
 # Release flow:
+#   - tag with a message: git tag -a v1.0.0 -m "<release notes>"
+#   - package stops before uploading anything if the tag has no message
 #   - package runs ./dist.sh and uploads dist/<NAME>.tar.gz to the project's
 #     generic package registry, under the tag's version
-#   - package also cuts that version's section out of CHANGELOG.md as the notes
-#   - release creates the release with those notes and links the archive
+#   - release creates the release, with the tag message as its notes, and links the archive
+#   - the Releases page is the changelog
 #   - the archive's permanent link for the newest release is
 #     <project>/-/releases/permalink/latest/downloads/<NAME>.tar.gz
 
@@ -46,18 +48,13 @@ package:
     - apt-get update
     - apt-get install -y --no-install-recommends librsvg2-bin bc curl ca-certificates
   script:
+    - test -n "$CI_COMMIT_TAG_MESSAGE" || { echo "tag $CI_COMMIT_TAG has no message; tag with git tag -a" >&2; exit 1; }
     - VERSION=${CI_COMMIT_TAG#v}
     - ./dist.sh
-    # the notes: every line under "## [<version>]" up to the next "## [" heading
-    - awk -v v="## [$VERSION]" 'index($0, "## [") == 1 {p = index($0, v) == 1; next} p' CHANGELOG.md >dist/notes.md
-    - test -s dist/notes.md || { echo "CHANGELOG.md has no section for $VERSION" >&2; exit 1; }
     - >-
       curl --fail-with-body --header "JOB-TOKEN: $CI_JOB_TOKEN"
       --upload-file "dist/$NAME.tar.gz"
       "$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/generic/$NAME/$VERSION/$NAME.tar.gz"
-  artifacts:
-    paths:
-      - dist/notes.md
 
 release:
   stage: release
@@ -75,5 +72,5 @@ release:
     - >-
       glab release create "$CI_COMMIT_TAG"
       --name "$CI_COMMIT_TAG"
-      --notes-file dist/notes.md
+      --notes "$CI_COMMIT_TAG_MESSAGE"
       --assets-links "[{\"name\": \"$NAME.tar.gz\", \"url\": \"$URL\", \"direct_asset_path\": \"/$NAME.tar.gz\", \"link_type\": \"package\"}]"
