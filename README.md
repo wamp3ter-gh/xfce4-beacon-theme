@@ -40,6 +40,20 @@ Contents:
 
 ## Quick start
 
+Install the latest release, with nothing to build:
+
+```
+curl -fsSLO https://gitlab.com/wamp3ter/xfce4-beacon-theme/-/raw/main/install.sh
+bash install.sh beacon-steel
+```
+
+- `install.sh` on its own downloads the latest release and installs every theme
+  into `~/.themes`.
+- `beacon-steel` also switches xfwm4 to it.
+- Needs `curl` and `tar`.
+
+Or build from the repository:
+
 ```
 git clone https://gitlab.com/wamp3ter/xfce4-beacon-theme.git
 cd xfce4-beacon-theme
@@ -250,7 +264,8 @@ Every image in `screenshots/` is generated:
 
 The Releases page is the changelog.
 
-Every push also runs CI's check job: shellcheck, then a full build.
+Every push also runs CI's check job: shellcheck, a full build and archive, then
+`./test-install.sh`.
 
 To pack an archive locally: `./dist.sh`, which writes
 `dist/xfce4-beacon-theme.tar.gz`.
@@ -377,11 +392,20 @@ Lists:
   - Checks for its tools before starting.
   - On any config error, the previous `build/` stays in place.
 
-- `./install.sh [--clean] [theme]`: Copies every built theme into `~/.themes`.
+- `./install.sh [--clean] [theme]`: Copies every theme into `~/.themes`.
   - `theme`: also switch xfwm4 to it.
-  - `--clean`: also remove Beacon themes no longer in `build/`.
-  - Checks everything before changing anything: the theme must be in `build/`,
-    and no destination may be a same-named folder that `build.sh` did not create.
+  - `--clean`: also remove Beacon themes no longer being installed.
+  - Where the themes come from:
+    - `build/` next to the script: a repository after `./build.sh`, or an
+      unpacked release;
+    - a repository without `build/`: it stops and asks for `./build.sh beacon.conf`;
+    - the script on its own: it downloads the latest release into a temporary
+      folder, installs from it, and removes the folder;
+    - it never builds.
+  - `BEACON_URL`: another release archive to download.
+  - Checks everything before changing anything: the theme must be among those
+    being installed, and no destination may be a same-named folder that
+    `build.sh` did not create.
   - Copies each theme beside the old one, then swaps it in, so a failed copy
     leaves the old theme in place.
 
@@ -411,6 +435,16 @@ Lists:
 - `./previews.sh`: Button sheets: every shape and glyph set, at 2x.
   - Works in a private copy of the repository, leaving `build/` untouched.
   - Needs a git checkout and ImageMagick.
+
+- `./test-install.sh`: tests `install.sh` in every mode, without touching your
+  desktop.
+  - Run `./dist.sh` first; it tests against `build/` and the local archive.
+  - Each case gets a throwaway HOME, and a stub `xfconf-query` that only records
+    its arguments.
+  - Downloads come from the local archive (`file://`), never the network.
+  - Cases: repo with and without `build/`, the script on its own, a bad URL, a
+    theme switch, a same-named folder that is not a Beacon theme, `--uninstall`.
+  - CI runs it on every push.
 
 ## Build constants
 

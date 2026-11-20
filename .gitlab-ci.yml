@@ -4,7 +4,7 @@
 # CI for xfce4-beacon-theme.
 #
 # Jobs:
-#   - check: every pipeline; shellcheck, then a full build
+#   - check: every pipeline; shellcheck, a full build and archive, then the install tests
 #   - package: tags v<X.Y.Z> only; builds the archive and uploads it
 #   - release: tags v<X.Y.Z> only; creates the GitLab release
 #
@@ -35,10 +35,11 @@ check:
   image: debian:stable-slim
   before_script:
     - apt-get update
-    - apt-get install -y --no-install-recommends librsvg2-bin bc shellcheck
+    - apt-get install -y --no-install-recommends librsvg2-bin bc shellcheck curl
   script:
     - shellcheck --severity=error ./*.sh
-    - ./build.sh beacon.conf
+    - ./dist.sh
+    - ./test-install.sh
 
 package:
   stage: package
