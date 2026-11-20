@@ -1,0 +1,5 @@
+build/
+build.new/
+build.capture/
+build.previews/
+dist/
