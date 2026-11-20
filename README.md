@@ -1,5 +1,8 @@
 # xfce4-beacon-theme
 
+[![pipeline](https://gitlab.com/wamp3ter/xfce4-beacon-theme/badges/main/pipeline.svg)](https://gitlab.com/wamp3ter/xfce4-beacon-theme/-/pipelines)
+[![release](https://gitlab.com/wamp3ter/xfce4-beacon-theme/-/badges/release.svg)](https://gitlab.com/wamp3ter/xfce4-beacon-theme/-/releases)
+
 xfwm4 window decorations (borders, title bar, buttons) for Xfce, built so that:
 - the focused window is identifiable at a glance;
 - the resize corners are visible.
