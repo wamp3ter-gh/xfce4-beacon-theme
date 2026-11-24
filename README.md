@@ -38,6 +38,7 @@ Contents:
   - [Unfocused tint](#unfocused-tint)
   - [Resize handles](#resize-handles)
   - [Colour vision](#colour-vision)
+- [Troubleshooting](#troubleshooting)
 - [Limits](#limits)
 - [Licence](#licence)
 
@@ -67,7 +68,7 @@ cd xfce4-beacon-theme
 - `./build.sh beacon.conf` renders every theme in `beacon.conf` into `build/`.
 - `./install.sh beacon-steel` copies them into `~/.themes` and switches xfwm4 to
   `beacon-steel`.
-- Missing a build tool? See [Install](#install), or build in a container.
+- Missing a build tool? See [Troubleshooting](#troubleshooting).
 
 ## Themes
 
@@ -84,7 +85,7 @@ What every theme has:
 - **Resize corners:** a 32px bracket on each bottom corner.
 - **Buttons:**
   - glyphs always drawn, not only on hover;
-  - toggled buttons (stick, shade, maximize) filled with the accent;
+  - toggled buttons (stick, shade, maximise) filled with the accent;
   - close spaced apart, and red on hover.
 
 ### Dark
@@ -161,8 +162,7 @@ rm -rf build && docker build -o build .
 ./install.sh beacon-steel
 ```
 
-- Remove `build/` first: `docker build` adds to it instead of replacing it, so
-  themes you have since removed would stay behind.
+- Remove `build/` first. See [Troubleshooting](#troubleshooting).
 - Another config: `--build-arg CONF=mine.conf`. The file must be inside the
   repository, since only the repository is copied in.
 
@@ -176,8 +176,8 @@ Either:
 - Settings > Window Manager > Style; or
 - `xfconf-query -c xfwm4 -p /general/theme -s beacon-teal-ink`
 
-After rebuilding the theme in use, switch to another and back: xfwm4 reloads a
-theme only when its name changes.
+After rebuilding the theme in use, switch to another and back. See
+[Troubleshooting](#troubleshooting).
 
 ## Uninstall
 
@@ -275,8 +275,9 @@ To pack an archive locally: `./dist.sh`, which writes
 
 ## beacon.conf
 
-`beacon.conf` describes the themes `build.sh` renders. Its header documents the
-same format as this section.
+`beacon.conf` describes the themes `build.sh` renders. This section and
+[Theme keys](#theme-keys) are the only full description of its format. The
+file's header points here.
 
 Format:
 - one entry per line;
@@ -290,7 +291,9 @@ Entries:
 - `colour <name> <#rrggbb>`: An accent colour, referred to by name from `theme` lines.
 
 - `glyphs <name> [<button>=<set> ...]`: A glyph set: which drawing (a, b or c) each button uses.
-  - Buttons: `menu`, `stick`, `shade`, `hide`, `max`, `close`.
+  - Buttons: `menu` (the window menu), `stick` (show on every workspace, xfwm4's
+    "Always on Visible Workspace"), `shade` (roll up to the title bar), `hide`
+    (minimise), `max` (maximise), `close`.
   - A button left out uses c.
   - Set `c` (every button from c) is built in.
 
@@ -345,8 +348,9 @@ Colours in the shipped file:
     [Resize handles](#resize-handles).
 
 - `mesh`: Fill the frame beyond the line.
-  - `0` (default): leave it clear.
-  - `1`: a 1px checkerboard of opaque pixels.
+  - `0` (default): leave it clear. Only the drawn line grabs.
+  - `1`: a 1px checkerboard of opaque pixels. Its solid pixels grab. It is the
+    accent on the focused window, neutral on others.
 
 - `tl`, `tr`, `bl`, `br`: Focused window's corner colours: top-left, top-right, bottom-left,
   bottom-right.
@@ -374,7 +378,7 @@ Lists:
 | stick | pin | layered squares | rising arrow |
 | shade | bar and chevron | rolled-up title | double chevron |
 | hide | bar and chevron | underscore | arrow into a bar |
-| maximize | corner brackets | square | diagonals |
+| maximise | corner brackets | square | diagonals |
 | close | X | X | round X |
 
 ## Button states
@@ -561,6 +565,34 @@ Results:
   2.4:1.
   - A toggled copper button stays close in colour to a hovered close button
     (1.6:1); position distinguishes them.
+
+## Troubleshooting
+
+### A rebuilt theme looks unchanged
+
+- Cause: xfwm4 reloads a theme only when its name changes.
+- Fix: switch to another theme, then back.
+
+### Removed themes are still in `build/` after a container build
+
+- Cause: `docker build -o build` adds to `build/` instead of replacing it.
+- Fix: `rm -rf build` before `docker build`.
+
+### `build.sh` stops and lists missing tools
+
+- Cause: a build tool is not installed.
+- Fix: install it (see [Requirements](#requirements)), or
+  [build in a container](#build-in-a-container).
+
+### `install.sh` stops and asks for `./build.sh beacon.conf`
+
+- Cause: a repository without `build/`. `install.sh` never builds.
+- Fix: `./build.sh beacon.conf`, then run `install.sh` again.
+
+### `previews.sh` fails in a downloaded release
+
+- Cause: it needs a git checkout.
+- Fix: run it in a clone of the repository.
 
 ## Limits
 
